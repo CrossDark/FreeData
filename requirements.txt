@@ -1,0 +1,2 @@
+UNKnownDB>=1.6.4
+setuptools>=52.0.0

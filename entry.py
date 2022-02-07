@@ -1,0 +1,3 @@
+"""
+FreeStrange install entry
+"""
