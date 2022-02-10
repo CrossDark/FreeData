@@ -6,7 +6,7 @@ Script Engine
 class VirtualMachine:
     def __init__(self, code):
         self.code = code
-        self.stack = list()
+        self.stack = []
         self.address = 0
 
     def push(self, value):
@@ -40,6 +40,7 @@ class VirtualMachine:
             "read": self.read,
             "stack": self.dump_stack,
             "swap": self.swap,
+            "=": self.value
         }
         if opcode in dispatch_map:
             dispatch_map[opcode]()
@@ -60,7 +61,9 @@ class VirtualMachine:
         pass
 
     def mul(self):
-        pass
+        v2 = self.pop()
+        v1 = self.pop()
+        self.push(v1 * v2)
 
     def plus(self):
         v2 = self.pop()
@@ -106,10 +109,10 @@ class VirtualMachine:
         pass
 
     def print(self):
-        pass
+        print(self.stack.pop())
 
     def print_in(self):
-        pass
+        print(int(self.stack[-1]))
 
     def read(self):
         pass
@@ -121,3 +124,7 @@ class VirtualMachine:
         pass
 
     # data function
+    def value(self):
+        v2 = self.pop()
+        v1 = self.pop()
+        exec(v1 + '=' + v2)
