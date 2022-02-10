@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='FreeStrange',
-    version='1.0.1',
+    version='1.0.3',
     author='CleverCreator',
     author_email='clevercreator@10minutesmail.com',
     packages=find_packages(),

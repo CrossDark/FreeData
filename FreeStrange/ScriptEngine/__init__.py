@@ -1,26 +1,42 @@
 """
 Script Engine
 """
+import sys
+from collections import deque
+
+
+class Stack(deque):
+    push = deque.append
+
+    def top(self):
+        return self[-1]
 
 
 class VirtualMachine:
     def __init__(self, code):
+        self.data_stack = Stack()
+        self.return_stack = Stack()
+        self.instruction_pointer = 0
         self.code = code
-        self.stack = []
-        self.address = 0
-
-    def push(self, value):
-        self.stack.append(value)
 
     def pop(self):
-        return self.stack.pop()
+        return self.data_stack.pop()
 
-    @property
+    def push(self, value):
+        self.data_stack.push(value)
+
     def top(self):
-        return self.stack[-1]
+        return self.data_stack.top()
 
-    def dispatch(self, opcode):
+    def run(self):
+        while self.instruction_pointer < len(self.code):
+            opcode = self.code[self.instruction_pointer]
+            self.instruction_pointer += 1
+            self.dispatch(opcode)
+
+    def dispatch(self, op):
         dispatch_map = {
+            # Base
             "%": self.mod,
             "*": self.mul,
             "+": self.plus,
@@ -36,95 +52,130 @@ class VirtualMachine:
             "jmp": self.jmp,
             "over": self.over,
             "print": self.print,
-            "println": self.print_in,
+            "println": self.println,
             "read": self.read,
             "stack": self.dump_stack,
             "swap": self.swap,
-            "=": self.value
+
+            # Data
+            "=": self.value,
+            "show": self.show,
+            "save": self.save,
+            "use": self.use
         }
-        if opcode in dispatch_map:
-            dispatch_map[opcode]()
-        elif isinstance(opcode, int):
-            self.push(opcode)
-        elif isinstance(opcode, str) \
-                and opcode[0] == opcode[-1] == '"':
-            self.push(opcode[1:-1])
 
-    def run(self):
-        while self.address < len(self.code):
-            opcode = self.code[self.address]
-            self.address += 1
-            self.dispatch(opcode)
+        if op in dispatch_map:
+            dispatch_map[op]()
+        elif isinstance(op, int):
+            self.push(op)  # push numbers on stack
+        elif isinstance(op, str):
+            self.push(op)  # push quoted strings on stack
+        else:
+            raise RuntimeError("Unknown opcode: '%s'" % op)
 
-    # base functions
-    def mod(self):
-        pass
-
-    def mul(self):
-        v2 = self.pop()
-        v1 = self.pop()
-        self.push(v1 * v2)
+    # OPERATIONS FOLLOW:
 
     def plus(self):
-        v2 = self.pop()
-        v1 = self.pop()
-        self.push(v1 + v2)
-
-    def minus(self):
-        pass
-
-    def div(self):
-        pass
-
-    def eq(self):
-        pass
-
-    def cast_int(self):
-        pass
-
-    def cast_str(self):
-        pass
-
-    def drop(self):
-        pass
-
-    def dup(self):
-        pass
+        self.push(self.pop() + self.pop())
 
     @staticmethod
     def exit():
-        exit()
+        sys.exit(0)
+
+    def minus(self):
+        last = self.pop()
+        self.push(self.pop() - last)
+
+    def mul(self):
+        self.push(self.pop() * self.pop())
+
+    def div(self):
+        last = self.pop()
+        self.push(self.pop() / last)
+
+    def mod(self):
+        last = self.pop()
+        self.push(self.pop() % last)
+
+    def dup(self):
+        self.push(self.top())
+
+    def over(self):
+        b = self.pop()
+        a = self.pop()
+        self.push(a)
+        self.push(b)
+        self.push(a)
+
+    def drop(self):
+        self.pop()
+
+    def swap(self):
+        b = self.pop()
+        a = self.pop()
+        self.push(b)
+        self.push(a)
+
+    def print(self):
+        sys.stdout.write(str(self.pop()))
+        sys.stdout.flush()
+
+    def println(self):
+        sys.stdout.write("%s\n" % self.pop())
+        sys.stdout.flush()
+
+    def read(self):
+        self.push(input())
+
+    def cast_int(self):
+        self.push(int(self.pop()))
+
+    def cast_str(self):
+        self.push(str(self.pop()))
+
+    def eq(self):
+        self.push(self.pop() == self.pop())
 
     def if_stmt(self):
-        pass
+        false_clause = self.pop()
+        true_clause = self.pop()
+        test = self.pop()
+        self.push(true_clause if test else false_clause)
 
     def jmp(self):
         address = self.pop()
-        if 0 <= address < len(self.code):
-            self.address = address
+        if isinstance(address, int) and 0 <= address < len(self.code):
+            self.instruction_pointer = address
         else:
-            raise RuntimeError("address must be integer")
-
-    def over(self):
-        pass
-
-    def print(self):
-        print(self.stack.pop())
-
-    def print_in(self):
-        print(int(self.stack[-1]))
-
-    def read(self):
-        pass
+            raise RuntimeError("JMP address must be a valid integer.")
 
     def dump_stack(self):
-        pass
+        print("Data stack (top first):")
 
-    def swap(self):
-        pass
+        for v in reversed(self.data_stack):
+            print(" - type %s, value '%s'" % (type(v), v))
 
     # data function
     def value(self):
         v2 = self.pop()
         v1 = self.pop()
-        exec(v1 + '=' + v2)
+        if type(v2) == int or bool:
+            exec('self.' + v1 + '=' + str(v2) + '')
+        elif type(v2) == str:
+            exec('self.' + v1 + '="' + v2 + '"')
+        else:
+            raise TypeError('type not support')
+
+    def change(self):
+        v2 = self.pop()
+        v1 = self.pop()
+        exec('self.' + v1 + '=' + v2)
+
+    def show(self):
+        sys.stdout.write(str(eval('self.' + self.pop())))
+
+    def save(self):
+        pass
+
+    def use(self):
+        pass
