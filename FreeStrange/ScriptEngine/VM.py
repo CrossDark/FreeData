@@ -1,9 +1,11 @@
 """
 Virtual Machine
 """
+import io
+import sqlite3
 import sys
 from collections import deque
-from . import keyword_list, wait_list
+from . import keyword_list, wait_list, start_end_list
 
 
 class Stack(deque):
@@ -46,14 +48,15 @@ class VirtualMachine:
             "stack": self.dump_stack,
             "swap": self.swap,
         }
-        if strange is not None:
-            self.dispatch_map += {
+        if strange is io.TextIOWrapper or sqlite3.Cursor:
+            self.strange = strange
+            self.dispatch_map.update({
                 # Data
                 "=": self.value,
                 "show": self.show,
                 "save": self.save,
                 "use": self.use
-            }
+            })
 
     def pop(self):
         return self.data_stack.pop()
@@ -188,7 +191,7 @@ class VirtualMachine:
         sys.stdout.write(str(exec(var)))
 
     def save(self):
-        print(set(self.base.items()) ^ set(self.__dict__.items()))
+        self.strange.write(str(self.pop()))
 
     def use(self):
         pass
@@ -199,6 +202,7 @@ class Preprocessor:
         self.stack = []
         self.out = []
         wait = []
+        end = []
         for i in code:
             if len(wait) != 0:
                 self.out += self.stack
@@ -206,9 +210,12 @@ class Preprocessor:
                 self.out += wait
                 wait.pop()
                 self.stack = []
+            elif (i in keyword_list) and (i in start_end_list):
+                end.append(i)
             elif (i in keyword_list) and (i in wait_list):
                 wait.append(i)
             elif (i in keyword_list) and (i not in wait_list):
                 self.out.append(i)
             else:
                 self.stack.append(i)
+        self.out += end

@@ -9,3 +9,4 @@ keyword_list = [
     '=', 'show', 'save', 'use'
 ]
 wait_list = ['+', '-', '*', '/', '==']
+start_end_list = ['print', 'printIn', 'save']
