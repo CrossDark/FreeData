@@ -17,30 +17,14 @@ class Stack(deque):
 
 
 class VirtualMachine:
-    def __init__(self, code):
+    def __init__(self, code, strange=None):
         self.data_stack = Stack()
         self.return_stack = Stack()
         self.instruction_pointer = 0
         self.code = code
         self.base = self.__dict__
-
-    def pop(self):
-        return self.data_stack.pop()
-
-    def push(self, value):
-        self.data_stack.push(value)
-
-    def top(self):
-        return self.data_stack.top()
-
-    def run(self):
-        while self.instruction_pointer < len(self.code):
-            opcode = self.code[self.instruction_pointer]
-            self.instruction_pointer += 1
-            self.dispatch(opcode)
-
-    def dispatch(self, op):
-        dispatch_map = {
+        self.strange = strange
+        self.dispatch_map = {
             # Base
             "%": self.mod,
             "*": self.mul,
@@ -61,15 +45,34 @@ class VirtualMachine:
             "read": self.read,
             "stack": self.dump_stack,
             "swap": self.swap,
-
-            # Data
-            "=": self.value,
-            "show": self.show,
-            "save": self.save,
-            "use": self.use
         }
-        if op in dispatch_map:
-            dispatch_map[op]()
+        if strange is not None:
+            self.dispatch_map += {
+                # Data
+                "=": self.value,
+                "show": self.show,
+                "save": self.save,
+                "use": self.use
+            }
+
+    def pop(self):
+        return self.data_stack.pop()
+
+    def push(self, value):
+        self.data_stack.push(value)
+
+    def top(self):
+        return self.data_stack.top()
+
+    def run(self):
+        while self.instruction_pointer < len(self.code):
+            opcode = self.code[self.instruction_pointer]
+            self.instruction_pointer += 1
+            self.dispatch(opcode)
+
+    def dispatch(self, op):
+        if op in self.dispatch_map:
+            self.dispatch_map[op]()
         elif isinstance(op, int):
             self.push(op)  # push numbers on stack
         elif isinstance(op, str):
