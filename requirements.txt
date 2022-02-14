@@ -1,2 +1,4 @@
 UNKnownDB>=1.6.4
 setuptools>=52.0.0
+UsefulHelper>=1.7.3
+click>=8.0.3
