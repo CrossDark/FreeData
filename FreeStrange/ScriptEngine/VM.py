@@ -220,4 +220,4 @@ class Preprocessor:
                 self.out.append(i)
             else:
                 self.stack.append(i)
-        self.out += end
+        self.out += self.stack + end
