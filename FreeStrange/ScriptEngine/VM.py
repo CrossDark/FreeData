@@ -48,7 +48,7 @@ class VirtualMachine:
             "stack": self.dump_stack,
             "swap": self.swap,
         }
-        if strange is io.TextIOWrapper or sqlite3.Cursor:
+        if type(strange) is io.TextIOWrapper:
             self.strange = strange
             self.dispatch_map.update({
                 # Data
@@ -57,6 +57,8 @@ class VirtualMachine:
                 "save": self.save,
                 "use": self.use
             })
+        elif type(strange) is sqlite3.Cursor:
+            self.sqlite = strange
 
     def pop(self):
         return self.data_stack.pop()

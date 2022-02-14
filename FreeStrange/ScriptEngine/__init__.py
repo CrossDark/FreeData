@@ -8,5 +8,5 @@ keyword_list = [
     # Data
     '=', 'show', 'save', 'use'
 ]
-wait_list = ['+', '-', '*', '/', '==']
+wait_list = ['+', '-', '*', '/', '==', 'swap']
 start_end_list = ['print', 'printIn', 'save']
