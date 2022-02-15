@@ -1,9 +1,8 @@
+#! /usr/bin/python
+# -*- coding: utf-8 -*-
 """
 Web API
 """
-# !/usr/bin/env python
-# -*- coding: utf-8 -*-
-# thanks hell 2017/7/9
 from flask import Flask
 from flask_restful import reqparse, abort, Api, Resource
 
@@ -11,9 +10,9 @@ app = Flask(__name__)
 api = Api(app)
 
 TODOS = {
-    'todo1': {'task': 'build an API'},
-    'todo2': {'task': '哈哈哈'},
-    'todo3': {'task': 'profit!'},
+    '1': {'task': 'build an API'},
+    '2': {'task': '哈哈哈'},
+    '3': {'task': 'profit!'},
 }
 
 
@@ -26,7 +25,7 @@ parser = reqparse.RequestParser()
 parser.add_argument('task')
 
 
-# # 操作（put / get / delete）单一资源Todo
+# # 操作（put / get / delete）单一资源
 class Todo(Resource):
     @staticmethod
     def get(todo_id):
