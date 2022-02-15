@@ -1,6 +1,8 @@
 """
 Processor
 """
+import click
+
 from .VM import VirtualMachine, Preprocessor
 import os
 
@@ -21,3 +23,17 @@ class Engine:
             return int(get)
         except ValueError:
             return get
+
+
+class CLI:
+    def __init__(self):
+        pass
+
+    @staticmethod
+    @click.command()
+    @click.option(
+        '--get', prompt='FreeData>>'
+    )
+    def main(get):
+        VirtualMachine(Preprocessor([Engine.type(x) for x in get.split(' ')]).out).run()
+        CLI.main()
