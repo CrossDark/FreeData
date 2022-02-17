@@ -13,5 +13,8 @@ class Node:
 
 
 class Manager:
-    def __init__(self):
-        pass
+    def __init__(self, data: {}):
+        for k, v in data.items():
+            if v is dict:
+                self.__init__(v)
+            exec('self.' + k + ' = Node("' + v + '")')

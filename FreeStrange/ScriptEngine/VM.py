@@ -5,8 +5,10 @@ Virtual Machine
 import io
 import sqlite3
 import sys
+import pickle
 from collections import deque
 from . import keyword_list, wait_list, start_end_list
+from ..Data.relation import Node
 
 
 class Stack(deque):
@@ -72,15 +74,15 @@ class VirtualMachine:
             "read": self.read,
             "stack": self.dump_stack,
             "swap": self.swap,
+            "node": self.node
         }
         if type(strange) is io.TextIOWrapper:
             self.strange = strange
             self.dispatch_map.update({
                 # Data
-                "=": self.value,
-                "show": self.show,
                 "save": self.save,
-                "use": self.use
+                "use": self.use,
+                "pickle": self.pickle
             })
         elif type(strange) is sqlite3.Cursor:
             self.sqlite = strange
@@ -200,33 +202,17 @@ class VirtualMachine:
         for v in reversed(self.data_stack):
             print(" - type %s, value '%s'" % (type(v), v))
 
+    def node(self):
+        self.push(Node(self.pop()))
+
     # data function
-    def value(self):
-        v2 = self.pop()
-        v1 = self.pop()
-        if type(v2) == int or bool:
-            exec('global ' + v1)
-            exec(v1 + '=' + str(v2) + '')
-        elif type(v2) == str:
-            exec('global ' + v1)
-            exec(v1 + '="' + v2 + '"')
-        else:
-            raise TypeError('type not support')
-
-    def change(self):
-        v2 = self.pop()
-        v1 = self.pop()
-        exec('global ' + v1)
-        exec(v1 + '=' + v2)
-
-    def show(self):
-        var = self.pop()
-        exec('global ' + var)
-        print(eval(var))
-        sys.stdout.write(str(exec(var)))
 
     def save(self):
         self.strange.write(str(self.pop()))
 
     def use(self):
         pass
+
+    def pickle(self):
+        print(self.strange)
+        pickle.dump(self.pop(), self.strange, 0)

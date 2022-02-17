@@ -1,6 +1,8 @@
 """
 Processor
 """
+import sqlite3
+
 import click
 
 from .VM import VirtualMachine, Preprocessor
@@ -8,11 +10,13 @@ import os
 
 
 class Engine:
-    def __init__(self, code, strange=None):
+    def __init__(self, code, strange='not file'):
         if os.path.isfile(strange):
             with open(strange, 'r+') as file:
                 for i in code:
                     VirtualMachine(Preprocessor([self.type(x) for x in i.split(' ')]).out, file).run()
+        elif type(strange) == sqlite3.Cursor:
+            raise ValueError('sqlite not support')
         else:
             for i in code:
                 VirtualMachine(Preprocessor([self.type(x) for x in i.split(' ')]).out).run()
