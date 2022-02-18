@@ -12,7 +12,7 @@ import os
 class Engine:
     def __init__(self, code, strange='not file'):
         if os.path.isfile(strange):
-            with open(strange, 'r+') as file:
+            with open(strange, 'rb+') as file:
                 for i in code:
                     VirtualMachine(Preprocessor([self.type(x) for x in i.split(' ')]).out, file).run()
         elif type(strange) == sqlite3.Cursor:

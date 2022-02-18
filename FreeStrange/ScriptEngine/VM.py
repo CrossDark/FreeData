@@ -76,13 +76,19 @@ class VirtualMachine:
             "swap": self.swap,
             "node": self.node
         }
-        if type(strange) is io.TextIOWrapper:
+        if type(strange) is io.BufferedRandom:
+            self.strange = strange
+            self.dispatch_map.update({
+                # Pickle
+                "use": self.use,
+                "pickle": self.pickle
+            })
+        elif type(strange) is io.TextIOWrapper:
             self.strange = strange
             self.dispatch_map.update({
                 # Data
                 "save": self.save,
-                "use": self.use,
-                "pickle": self.pickle
+                "load": self.load
             })
         elif type(strange) is sqlite3.Cursor:
             self.sqlite = strange
@@ -208,11 +214,15 @@ class VirtualMachine:
     # data function
 
     def save(self):
-        self.strange.write(str(self.pop()))
+        self.strange.write(bytes(str(self.pop()), 'utf-8'))
+
+    def load(self):
+        self.push(self.strange.read())
+
+    # Pickle function
 
     def use(self):
-        pass
+        self.push(pickle.load(self.strange))
 
     def pickle(self):
-        print(self.strange)
-        pickle.dump(self.pop(), self.strange, 0)
+        pickle.dump(self.pop(), self.strange)
