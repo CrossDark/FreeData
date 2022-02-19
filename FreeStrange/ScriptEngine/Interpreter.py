@@ -10,9 +10,9 @@ import os
 
 
 class Engine:
-    def __init__(self, code, strange='not file'):
+    def __init__(self, code, strange='not file', mode='r+'):
         if os.path.isfile(strange):
-            with open(strange, 'rb+') as file:
+            with open(strange, mode) as file:
                 for i in code:
                     VirtualMachine(Preprocessor([self.type(x) for x in i.split(' ')]).out, file).run()
         elif type(strange) == sqlite3.Cursor:

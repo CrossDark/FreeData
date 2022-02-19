@@ -214,7 +214,7 @@ class VirtualMachine:
     # data function
 
     def save(self):
-        self.strange.write(bytes(str(self.pop()), 'utf-8'))
+        self.strange.write(str(self.pop()), 'utf-8')
 
     def load(self):
         self.push(self.strange.read())
