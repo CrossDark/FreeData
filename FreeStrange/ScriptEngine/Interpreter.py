@@ -1,25 +1,29 @@
 """
 Processor
 """
+import io
 import sqlite3
 
 import click
 
-from .VM import VirtualMachine, Preprocessor
+from .VM import VirtualMachine, Preprocessor, Strange
 import os
 
 
 class Engine:
     def __init__(self, code, strange='not file', mode='r+'):
         if os.path.isfile(strange):
-            with open(strange, mode) as file:
-                for i in code:
-                    VirtualMachine(Preprocessor([self.type(x) for x in i.split(' ')]).out, file).run()
-        elif type(strange) == sqlite3.Cursor:
+            file = open(strange, mode)
+        elif type(strange) is sqlite3.Cursor:
             raise ValueError('sqlite not support')
+        elif type(strange) is Strange:
+            file = strange
         else:
-            for i in code:
-                VirtualMachine(Preprocessor([self.type(x) for x in i.split(' ')]).out).run()
+            file = None
+        for i in code:
+            VirtualMachine(Preprocessor([self.type(x) for x in i.split(' ')]).out, file).run()
+        if file is io.TextIOWrapper or io.BufferedRandom:
+            file.close()
 
     @staticmethod
     def type(get):

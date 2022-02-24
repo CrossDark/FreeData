@@ -21,6 +21,11 @@ class Stack(deque):
         return True
 
 
+class Strange:
+    def __init__(self):
+        self.node = {}
+
+
 class Preprocessor:
     def __init__(self, code):
         self.stack = []
@@ -92,6 +97,14 @@ class VirtualMachine:
             })
         elif type(strange) is sqlite3.Cursor:
             self.sqlite = strange
+        elif type(strange) is Strange:
+            self.dispatch_map.update({
+                # Memory
+                'write': self.in_,
+                'delete': self.out
+            })
+        else:
+            pass
 
     def pop(self):
         return self.data_stack.pop()
@@ -214,7 +227,7 @@ class VirtualMachine:
     # data function
 
     def save(self):
-        self.strange.write(str(self.pop()), 'utf-8')
+        self.strange.write(str(self.pop()))
 
     def load(self):
         self.push(self.strange.read())
@@ -226,3 +239,11 @@ class VirtualMachine:
 
     def pickle(self):
         pickle.dump(self.pop(), self.strange)
+
+    # Memory function
+
+    def in_(self):
+        self.strange.node.append(self.pop())
+
+    def out(self):
+        del self.strange.node[self.pop()]
