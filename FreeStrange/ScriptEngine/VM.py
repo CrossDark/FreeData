@@ -7,7 +7,7 @@ import sqlite3
 import sys
 import pickle
 from collections import deque
-from . import keyword_list, wait_list, start_end_list
+from . import keyword_list, wait_list, start_end_list, BaseMachine
 from ..Data.relation import Node
 
 
@@ -50,37 +50,15 @@ class Preprocessor:
         self.out += self.stack + end
 
 
-class VirtualMachine:
+class VirtualMachine(BaseMachine):
     def __init__(self, code, strange=None):
+        super(VirtualMachine, self).__init__()
         self.data_stack = Stack()
         self.return_stack = Stack()
         self.instruction_pointer = 0
         self.code = code
         self.base = self.__dict__
         self.strange = strange
-        self.dispatch_map = {
-            # Base
-            "%": self.mod,
-            "*": self.mul,
-            "+": self.plus,
-            "-": self.minus,
-            "/": self.div,
-            "==": self.eq,
-            "cast_int": self.cast_int,
-            "cast_str": self.cast_str,
-            "drop": self.drop,
-            "dup": self.dup,
-            "exit": self.exit,
-            "if": self.if_stmt,
-            "jmp": self.jmp,
-            "over": self.over,
-            "print": self.print,
-            "println": self.println,
-            "read": self.read,
-            "stack": self.dump_stack,
-            "swap": self.swap,
-            "node": self.node
-        }
         if type(strange) is io.BufferedRandom:
             self.strange = strange
             self.dispatch_map.update({
@@ -247,3 +225,7 @@ class VirtualMachine:
 
     def out(self):
         del self.strange.node[self.pop()]
+
+
+class SuperMachine:
+    def __init__(self): pass
